@@ -6,13 +6,32 @@ interface ApiOptions extends Omit<RequestInit, 'body' | 'method'> {
   params?: Params
 }
 
+export type APIResponse<T = unknown> = {
+  data?: T
+  message?: string
+  success: boolean
+}
+
 export class Api {
   private readonly baseUrl: string
   private readonly defaultHeaders: Record<string, string>
+  private onUnauthorized: (() => void | Promise<void>) | null = null
 
   constructor(headers: Record<string, string> = {}) {
     this.baseUrl = environment.apiUrl
     this.defaultHeaders = { 'Content-Type': 'application/json', ...headers }
+  }
+
+  setUnauthorizedHandler(handler: () => void | Promise<void>): void {
+    this.onUnauthorized = handler
+  }
+
+  setAuthToken(token: string | null): void {
+    if (token) {
+      this.defaultHeaders['Authorization'] = `Bearer ${token}`
+    } else {
+      delete this.defaultHeaders['Authorization']
+    }
   }
 
   private buildUrl(endpoint: string, params?: Params): string {
@@ -26,19 +45,7 @@ export class Api {
     return qs ? `${base}?${qs}` : base
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      const error = await this.extractError(response)
-      throw new ApiError(
-        error.message || `HTTP ${response.status}: ${response.statusText}`,
-        response.status,
-        error.data,
-      )
-    }
-    return response.json() as Promise<T>
-  }
-
-  private async extractError(response: Response): Promise<{ message?: string; data?: unknown }> {
+  private async extractError(response: Response): Promise<{ error?: string; message?: string }> {
     try {
       return await response.json()
     } catch {
@@ -46,68 +53,84 @@ export class Api {
     }
   }
 
-  async get<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-    const { params, ...rest } = options
-    const response = await fetch(this.buildUrl(endpoint, params), {
-      ...rest,
-      method: 'GET',
-      headers: { ...this.defaultHeaders, ...rest.headers },
-    })
-    return this.handleResponse<T>(response)
+  private async processApiData<T>(response: Response): Promise<APIResponse<T>> {
+    if (!response.ok) {
+      if (response.status === 401) await this.onUnauthorized?.()
+      const body = await this.extractError(response)
+      return {
+        success: false,
+        message: body.error ?? body.message ?? `HTTP ${response.status}: ${response.statusText}`,
+      }
+    }
+    try {
+      const data = (await response.json()) as T
+      return { success: true, data }
+    } catch {
+      return { success: true }
+    }
   }
 
-  async post<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<T> {
-    const { params, ...rest } = options
-    const response = await fetch(this.buildUrl(endpoint, params), {
-      ...rest,
-      method: 'POST',
-      headers: { ...this.defaultHeaders, ...rest.headers },
-      body: data !== undefined ? JSON.stringify(data) : undefined,
-    })
-    return this.handleResponse<T>(response)
+  private async handleResponse<T>(promise: Promise<Response>): Promise<APIResponse<T>> {
+    const response = await promise
+    return this.processApiData<T>(response)
   }
 
-  async put<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<T> {
+  async get<T>(endpoint: string, options: ApiOptions = {}): Promise<APIResponse<T>> {
     const { params, ...rest } = options
-    const response = await fetch(this.buildUrl(endpoint, params), {
-      ...rest,
-      method: 'PUT',
-      headers: { ...this.defaultHeaders, ...rest.headers },
-      body: data !== undefined ? JSON.stringify(data) : undefined,
-    })
-    return this.handleResponse<T>(response)
+    return this.handleResponse<T>(
+      fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method: 'GET',
+        headers: { ...this.defaultHeaders, ...rest.headers },
+      }),
+    )
   }
 
-  async patch<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
     const { params, ...rest } = options
-    const response = await fetch(this.buildUrl(endpoint, params), {
-      ...rest,
-      method: 'PATCH',
-      headers: { ...this.defaultHeaders, ...rest.headers },
-      body: data !== undefined ? JSON.stringify(data) : undefined,
-    })
-    return this.handleResponse<T>(response)
+    return this.handleResponse<T>(
+      fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method: 'POST',
+        headers: { ...this.defaultHeaders, ...rest.headers },
+        body: data !== undefined ? JSON.stringify(data) : undefined,
+      }),
+    )
   }
 
-  async delete<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
+  async put<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
     const { params, ...rest } = options
-    const response = await fetch(this.buildUrl(endpoint, params), {
-      ...rest,
-      method: 'DELETE',
-      headers: { ...this.defaultHeaders, ...rest.headers },
-    })
-    return this.handleResponse<T>(response)
+    return this.handleResponse<T>(
+      fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method: 'PUT',
+        headers: { ...this.defaultHeaders, ...rest.headers },
+        body: data !== undefined ? JSON.stringify(data) : undefined,
+      }),
+    )
   }
-}
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-    public readonly data?: unknown,
-  ) {
-    super(message)
-    this.name = 'ApiError'
+  async patch<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
+    const { params, ...rest } = options
+    return this.handleResponse<T>(
+      fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method: 'PATCH',
+        headers: { ...this.defaultHeaders, ...rest.headers },
+        body: data !== undefined ? JSON.stringify(data) : undefined,
+      }),
+    )
+  }
+
+  async delete<T>(endpoint: string, options: ApiOptions = {}): Promise<APIResponse<T>> {
+    const { params, ...rest } = options
+    return this.handleResponse<T>(
+      fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method: 'DELETE',
+        headers: { ...this.defaultHeaders, ...rest.headers },
+      }),
+    )
   }
 }
 

@@ -6,13 +6,32 @@ Quand on demande d'ajouter un champ de formulaire typé, intégrable avec `react
 
 ## Prérequis
 
-**react-hook-form non installé par défaut.** Si le projet doit gérer des formulaires, installer d'abord :
+**Dépendances non installées par défaut :**
 
 ```bash
-pnpm add react-hook-form
+pnpm add react-hook-form @hookform/resolvers zod
 ```
 
-## Composants disponibles (déjà dans le projet)
+`zod` déjà présent dans le boilerplate. Vérifier `package.json` avant d'installer.
+
+## Composant déjà disponible
+
+`FormInput` existe dans `src/shared/components/form-inputs/form-input.tsx`, exporté via :
+
+```ts
+import { FormInput } from '#/shared/components/form-inputs'
+```
+
+**Ne pas recréer** — l'utiliser directement.
+
+## Comportement built-in
+
+- `type="password"` → toggle Eye/EyeClosed automatique, pas de config supplémentaire
+- `error` prop → affiche `FieldError` + style destructive via `aria-invalid` + `data-invalid`
+- `useId()` interne → label ↔ input lié automatiquement (accessibilité)
+- `React.ComponentProps<'input'>` → React 19 `ref` inclus → fonctionne avec `{...register(...)}`
+
+## Composants UI sous-jacents
 
 | Import | Provenance |
 |--------|------------|
@@ -22,17 +41,74 @@ pnpm add react-hook-form
 | `FieldError` | `#/shared/components/ui/field` |
 | `Input` | `#/shared/components/ui/input` |
 
-`FieldError` accepte `children` string directement → parfait pour `errors.field?.message`.
-
-## Où placer le composant
-
-- Utilisé par plusieurs features → `src/shared/components/form-input.tsx`
-- Spécifique à une feature → `src/features/{feature}/components/form-input.tsx`
-
-## Implémentation
+## Usage avec react-hook-form + Zod
 
 ```tsx
-import { useId } from 'react'
+import { useTransition } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { LoginSchema } from '../auth.schemas'
+import type { LoginDto } from '../auth.types'
+import { signIn } from '../auth.service'
+import { FormInput } from '#/shared/components/form-inputs'
+import { Button } from '#/shared/components/ui/button'
+
+export function LoginForm() {
+  const [isPending, startTransition] = useTransition()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginDto>({
+    resolver: zodResolver(LoginSchema),
+  })
+
+  const onSubmit = (payload: LoginDto) => {
+    startTransition(async () => {
+      const { success, message } = await signIn(payload)
+      if (!success) {
+        toast.error(message || 'Erreur')
+        return
+      }
+      toast.success(message || 'Succès')
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <FormInput
+        label="E-mail"
+        type="email"
+        placeholder="you@example.com"
+        error={errors.email?.message}
+        {...register('email')}
+      />
+      <FormInput
+        label="Mot de passe"
+        type="password"
+        error={errors.password?.message}
+        {...register('password')}
+      />
+      <Button type="submit" loading={isPending}>
+        Se connecter
+      </Button>
+    </form>
+  )
+}
+```
+
+**Points clés :**
+- `useTransition` pour le pending state — pas `useState<boolean>`
+- `Button` a un prop `loading` — passe `isPending` directement
+- `{...register('field')}` spread en **dernier** pour ne pas écraser `id`
+- `type="password"` → toggle visible/caché intégré, rien à ajouter
+
+## Implémentation complète (si besoin de créer un nouveau FormInput)
+
+```tsx
+import { useId, useState } from 'react'
+import { Eye, EyeClosed } from 'lucide-react'
 import {
   Field,
   FieldDescription,
@@ -55,10 +131,13 @@ export function FormInput({
   error,
   containerClassName,
   id,
+  type,
   ...props
 }: FormInputProps) {
   const generatedId = useId()
   const inputId = id ?? generatedId
+  const isPassword = type === 'password'
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <Field
@@ -66,7 +145,27 @@ export function FormInput({
       className={cn('flex flex-col gap-1', containerClassName)}
     >
       <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
-      <Input id={inputId} aria-invalid={!!error} {...props} />
+      {isPassword ? (
+        <div className="relative">
+          <Input
+            id={inputId}
+            aria-invalid={!!error}
+            type={showPassword ? 'text' : 'password'}
+            {...props}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
+            aria-label={showPassword ? 'Cacher le mot de passe' : 'Afficher le mot de passe'}
+          >
+            {showPassword ? <Eye className="size-4" /> : <EyeClosed className="size-4" />}
+          </button>
+        </div>
+      ) : (
+        <Input id={inputId} aria-invalid={!!error} type={type} {...props} />
+      )}
       {description && <FieldDescription>{description}</FieldDescription>}
       {error && <FieldError>{error}</FieldError>}
     </Field>
@@ -74,84 +173,33 @@ export function FormInput({
 }
 ```
 
-**Pourquoi `React.ComponentProps<'input'>` et non `InputHTMLAttributes` :**
-React 19 — `ref` est un prop normal. `React.ComponentProps<'input'>` l'inclut, ce qui permet le `register()` de react-hook-form sans problème.
+Exporter dans `src/shared/components/form-inputs/index.ts` :
 
-## Usage avec react-hook-form
-
-```tsx
-import { useForm } from 'react-hook-form'
-import { FormInput } from '#/shared/components/form-input'
-
-type LoginForm = {
-  email: string
-  password: string
-}
-
-export function LoginForm() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>()
-
-  const onSubmit = (data: LoginForm) => console.log(data)
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <FormInput
-        label="E-mail"
-        type="email"
-        placeholder="you@example.com"
-        error={errors.email?.message}
-        {...register('email', { required: 'E-mail requis' })}
-      />
-      <FormInput
-        label="Mot de passe"
-        type="password"
-        description="8 caractères minimum."
-        error={errors.password?.message}
-        {...register('password', { minLength: { value: 8, message: '8 caractères min.' } })}
-      />
-      <button type="submit">Connexion</button>
-    </form>
-  )
-}
+```ts
+export { FormInput } from './form-input'
 ```
 
-## Variantes supplémentaires (optionnel)
+## Variantes supplémentaires
 
-Si le projet a besoin de `FormSelect`, `FormTextarea`, etc., répliquer le même pattern :
+Même pattern pour `FormTextarea`, `FormSelect`, etc. :
 
 ```tsx
-// src/shared/components/form-textarea.tsx
 interface FormTextareaProps extends React.ComponentProps<'textarea'> {
   label: string
   description?: string
   error?: string
   containerClassName?: string
 }
-
-export function Formtextarea({ label, description, error, containerClassName, id, ...props }: FormTextareaProps) {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
-
-  return (
-    <Field data-invalid={error ? true : undefined} className={cn('flex flex-col gap-1', containerClassName)}>
-      <FieldLabel htmlFor={inputId}>{label}</FieldLabel>
-      <textarea id={inputId} aria-invalid={!!error} {...props} />
-      {description && <FieldDescription>{description}</FieldDescription>}
-      {error && <FieldError>{error}</FieldError>}
-    </Field>
-  )
-}
 ```
+
+Placer dans `src/shared/components/form-inputs/form-textarea.tsx`, exporter via le même `index.ts`.
 
 ## Vérification finale
 
-- [ ] `react-hook-form` installé si utilisé
-- [ ] `useId()` utilisé pour générer l'id (accessibilité label ↔ input)
-- [ ] `aria-invalid={!!error}` présent sur l'input (style destructive shadcn)
-- [ ] `data-invalid` sur `Field` (style couleur hérité via CSS)
-- [ ] Props `{...register('field')}` spread en dernier pour ne pas écraser `id`
-- [ ] Exporté dans `index.ts` si dans une feature
+- [ ] `react-hook-form` + `@hookform/resolvers` installés
+- [ ] Schéma Zod défini dans `{feature}.schemas.ts` avec `import { z } from 'zod'`
+- [ ] `zodResolver(Schema)` passé à `useForm`
+- [ ] `useTransition` pour pending state — pas `useState`
+- [ ] `Button loading={isPending}` pour feedback visuel
+- [ ] `{...register('field')}` spread en dernier sur `FormInput`
+- [ ] Import depuis `#/shared/components/form-inputs` (barrel, pluriel)

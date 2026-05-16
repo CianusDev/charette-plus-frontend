@@ -20,9 +20,12 @@ Dossier de référence pour tout agent IA travaillant sur ce projet.
 | Appeler une API | `patterns/service.md` |
 | Créer un hook React | `patterns/hook.md` |
 | Créer un composant | `patterns/component.md` |
+| Créer un formulaire | `patterns/form.md` |
+| Protéger une route | `patterns/guard.md` |
 | Créer une feature complète | `../../skills/create-feature.md` |
 | Créer une route/page | `../../skills/create-route.md` |
 | Créer un composant | `../../skills/create-component.md` |
+| Créer un champ de formulaire | `../../skills/create-form-input.md` |
 
 ## Structure `src/`
 
