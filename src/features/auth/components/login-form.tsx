@@ -1,10 +1,11 @@
 import { useTransition } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { useForm } from 'react-hook-form'
 import type { LoginDto } from '../auth.types'
 import { toast } from 'sonner'
 import logger from '#/shared/lib/logger'
 import { FormInput } from '#/shared/components/form-inputs'
+import { Button } from '#/shared/components/ui/button'
 import { signIn } from '../auth.service'
 import { LoginSchema } from '../auth.schemas'
 
@@ -15,7 +16,7 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(LoginSchema),
+    resolver: standardSchemaResolver(LoginSchema),
   })
 
   const onSubmit = (paylaod: LoginDto) => {

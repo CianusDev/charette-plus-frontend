@@ -11,8 +11,8 @@ function Home() {
         Welcome to <span className="text-red-600">TanStack Start</span>
       </h1>
       <div className="p-8 grid grid-cols-2 gap-4 max-w-2xl w-full">
-        <Link to="/forms" className="p-4 border rounded-md">
-          <h2 className="text-lg font-bold mb-2">Forms</h2>
+        <Link to="/login" className="p-4 border rounded-md">
+          <h2 className="text-lg font-bold mb-2">Login</h2>
         </Link>
         <div className="p-4 border rounded-md">
           <h2 className="text-lg font-bold mb-2">TanStack Query</h2>

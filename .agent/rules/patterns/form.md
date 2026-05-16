@@ -1,6 +1,6 @@
 # Pattern : Formulaire
 
-Formulaires utilisent `react-hook-form` + Zod v4 + `zodResolver`. Schéma dans `{feature}.schemas.ts`, types dérivés dans `{feature}.types.ts`.
+Formulaires utilisent `react-hook-form` + Zod v4 + `standardSchemaResolver`. Schéma dans `{feature}.schemas.ts`, types dérivés dans `{feature}.types.ts`.
 
 ## Structure fichiers
 
@@ -40,7 +40,7 @@ Types dérivés via `z.infer` → toujours en sync avec le schéma. Pas de dupli
 
 ```tsx
 import { useTransition } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { LoginSchema } from '../auth.schemas'
@@ -56,7 +56,7 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginDto>({
-    resolver: zodResolver(LoginSchema),
+    resolver: standardSchemaResolver(LoginSchema),
   })
 
   const onSubmit = (payload: LoginDto) => {
