@@ -19,7 +19,11 @@ export class Api {
 
   constructor(headers: Record<string, string> = {}) {
     this.baseUrl = environment.apiUrl
-    this.defaultHeaders = { 'Content-Type': 'application/json', ...headers }
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+      Credentials: 'include',
+      ...headers,
+    }
   }
 
   setUnauthorizedHandler(handler: () => void | Promise<void>): void {
@@ -45,7 +49,9 @@ export class Api {
     return qs ? `${base}?${qs}` : base
   }
 
-  private async extractError(response: Response): Promise<{ error?: string; message?: string }> {
+  private async extractError(
+    response: Response,
+  ): Promise<{ error?: string; message?: string }> {
     try {
       return await response.json()
     } catch {
@@ -59,7 +65,10 @@ export class Api {
       const body = await this.extractError(response)
       return {
         success: false,
-        message: body.error ?? body.message ?? `HTTP ${response.status}: ${response.statusText}`,
+        message:
+          body.error ??
+          body.message ??
+          `HTTP ${response.status}: ${response.statusText}`,
       }
     }
     try {
@@ -70,12 +79,17 @@ export class Api {
     }
   }
 
-  private async handleResponse<T>(promise: Promise<Response>): Promise<APIResponse<T>> {
+  private async handleResponse<T>(
+    promise: Promise<Response>,
+  ): Promise<APIResponse<T>> {
     const response = await promise
     return this.processApiData<T>(response)
   }
 
-  async get<T>(endpoint: string, options: ApiOptions = {}): Promise<APIResponse<T>> {
+  async get<T>(
+    endpoint: string,
+    options: ApiOptions = {},
+  ): Promise<APIResponse<T>> {
     const { params, ...rest } = options
     return this.handleResponse<T>(
       fetch(this.buildUrl(endpoint, params), {
@@ -86,7 +100,11 @@ export class Api {
     )
   }
 
-  async post<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
+  async post<T>(
+    endpoint: string,
+    data?: unknown,
+    options: ApiOptions = {},
+  ): Promise<APIResponse<T>> {
     const { params, ...rest } = options
     return this.handleResponse<T>(
       fetch(this.buildUrl(endpoint, params), {
@@ -98,7 +116,11 @@ export class Api {
     )
   }
 
-  async put<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
+  async put<T>(
+    endpoint: string,
+    data?: unknown,
+    options: ApiOptions = {},
+  ): Promise<APIResponse<T>> {
     const { params, ...rest } = options
     return this.handleResponse<T>(
       fetch(this.buildUrl(endpoint, params), {
@@ -110,7 +132,11 @@ export class Api {
     )
   }
 
-  async patch<T>(endpoint: string, data?: unknown, options: ApiOptions = {}): Promise<APIResponse<T>> {
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    options: ApiOptions = {},
+  ): Promise<APIResponse<T>> {
     const { params, ...rest } = options
     return this.handleResponse<T>(
       fetch(this.buildUrl(endpoint, params), {
@@ -122,7 +148,10 @@ export class Api {
     )
   }
 
-  async delete<T>(endpoint: string, options: ApiOptions = {}): Promise<APIResponse<T>> {
+  async delete<T>(
+    endpoint: string,
+    options: ApiOptions = {},
+  ): Promise<APIResponse<T>> {
     const { params, ...rest } = options
     return this.handleResponse<T>(
       fetch(this.buildUrl(endpoint, params), {
