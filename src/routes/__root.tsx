@@ -1,9 +1,8 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-import appCss from '../styles.css?url'
-import { environment } from '#/environments'
-import { AuthProvider } from '#/shared/providers/auth-provider'
 import { Toaster } from 'sonner'
+
+import { environment } from '#/environments'
+import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -16,13 +15,18 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: environment.appName,
+        title: `${environment.appName} — Kits de rentrée académique`,
       },
     ],
     links: [
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/assets/logo.svg',
       },
     ],
   }),
@@ -36,8 +40,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
-        <Toaster className="font-sans" />
+        {children}
+        <Toaster className="font-sans" position="top-center" richColors />
         <Scripts />
       </body>
     </html>

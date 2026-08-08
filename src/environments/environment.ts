@@ -2,9 +2,9 @@ import type { Environment } from './environment.interface'
 
 export const environment: Environment = {
   production: false,
-  apiUrl: 'https://backend-dev.example.com/api',
+  apiUrl: 'http://localhost:5000/api',
   logLevel: 'debug',
-  appName: 'React Start Dev',
+  appName: 'Charette Plus',
   apiTimeout: 30000,
   enableAnalytics: false,
   features: {

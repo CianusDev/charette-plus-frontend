@@ -10,12 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as KitsSlugRouteImport } from './routes/kits/$slug'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as AdminKitsIdRouteImport } from './routes/admin/kits/$id'
+import { Route as AdminKitsNewRouteImport } from './routes/admin/kits/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const KitsSlugRoute = KitsSlugRouteImport.update({
+  id: '/kits/$slug',
+  path: '/kits/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
@@ -23,39 +42,77 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => rootRouteImport,
+const AdminKitsIdRoute = AdminKitsIdRouteImport.update({
+  id: '/kits/$id',
+  path: '/kits/$id',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminKitsNewRoute = AdminKitsNewRouteImport.update({
+  id: '/kits/new',
+  path: '/kits/new',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/kits/$slug': typeof KitsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/admin/kits/$id': typeof AdminKitsIdRoute
+  '/admin/kits/new': typeof AdminKitsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardIndexRoute
+  '/kits/$slug': typeof KitsSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/login': typeof LoginIndexRoute
+  '/admin/kits/$id': typeof AdminKitsIdRoute
+  '/admin/kits/new': typeof AdminKitsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/kits/$slug': typeof KitsSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/admin/kits/$id': typeof AdminKitsIdRoute
+  '/admin/kits/new': typeof AdminKitsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard/' | '/login/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/kits/$slug'
+    | '/admin/'
+    | '/login/'
+    | '/admin/kits/$id'
+    | '/admin/kits/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login'
-  id: '__root__' | '/' | '/dashboard/' | '/login/'
+  to:
+    | '/'
+    | '/kits/$slug'
+    | '/admin'
+    | '/login'
+    | '/admin/kits/$id'
+    | '/admin/kits/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/kits/$slug'
+    | '/admin/'
+    | '/login/'
+    | '/admin/kits/$id'
+    | '/admin/kits/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  KitsSlugRoute: typeof KitsSlugRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
@@ -68,6 +125,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/kits/$slug': {
+      id: '/kits/$slug'
+      path: '/kits/$slug'
+      fullPath: '/kits/$slug'
+      preLoaderRoute: typeof KitsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
@@ -75,19 +153,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/admin/kits/$id': {
+      id: '/admin/kits/$id'
+      path: '/kits/$id'
+      fullPath: '/admin/kits/$id'
+      preLoaderRoute: typeof AdminKitsIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/kits/new': {
+      id: '/admin/kits/new'
+      path: '/kits/new'
+      fullPath: '/admin/kits/new'
+      preLoaderRoute: typeof AdminKitsNewRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminKitsIdRoute: typeof AdminKitsIdRoute
+  AdminKitsNewRoute: typeof AdminKitsNewRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+  AdminKitsIdRoute: AdminKitsIdRoute,
+  AdminKitsNewRoute: AdminKitsNewRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  KitsSlugRoute: KitsSlugRoute,
   LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport

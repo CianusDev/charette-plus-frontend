@@ -12,6 +12,29 @@ export type APIResponse<T = unknown> = {
   success: boolean
 }
 
+/** Enveloppe renvoyee par l'API NestJS (`ControllerResponse`). */
+export type ApiEnvelope<T> = {
+  success: boolean
+  message: string
+  data: T
+}
+
+/**
+ * Deballe une reponse API : renvoie `data` ou leve une Error portant
+ * le message renvoye par l'API (utilisable dans un loader ou un catch).
+ */
+export function unwrap<T>(response: APIResponse<ApiEnvelope<T>>): T {
+  if (!response.success || !response.data) {
+    throw new Error(response.message ?? 'Une erreur est survenue')
+  }
+  return response.data.data
+}
+
+/**
+ * Client HTTP du projet. L'authentification repose sur le cookie httpOnly
+ * `authentication` pose par l'API : toutes les requetes partent donc avec
+ * `credentials: 'include'` et aucun token n'est manipule cote JavaScript.
+ */
 export class Api {
   private readonly baseUrl: string
   private readonly defaultHeaders: Record<string, string>
@@ -21,21 +44,12 @@ export class Api {
     this.baseUrl = environment.apiUrl
     this.defaultHeaders = {
       'Content-Type': 'application/json',
-      Credentials: 'include',
       ...headers,
     }
   }
 
   setUnauthorizedHandler(handler: () => void | Promise<void>): void {
     this.onUnauthorized = handler
-  }
-
-  setAuthToken(token: string | null): void {
-    if (token) {
-      this.defaultHeaders['Authorization'] = `Bearer ${token}`
-    } else {
-      delete this.defaultHeaders['Authorization']
-    }
   }
 
   private buildUrl(endpoint: string, params?: Params): string {
@@ -53,7 +67,7 @@ export class Api {
     response: Response,
   ): Promise<{ error?: string; message?: string }> {
     try {
-      return await response.json()
+      return (await response.json()) as { error?: string; message?: string }
     } catch {
       return {}
     }
@@ -66,8 +80,8 @@ export class Api {
       return {
         success: false,
         message:
-          body.error ??
           body.message ??
+          body.error ??
           `HTTP ${response.status}: ${response.statusText}`,
       }
     }
@@ -79,87 +93,50 @@ export class Api {
     }
   }
 
-  private async handleResponse<T>(
-    promise: Promise<Response>,
+  private async request<T>(
+    method: string,
+    endpoint: string,
+    { params, headers, ...rest }: ApiOptions = {},
+    body?: unknown,
   ): Promise<APIResponse<T>> {
-    const response = await promise
-    return this.processApiData<T>(response)
+    try {
+      const response = await fetch(this.buildUrl(endpoint, params), {
+        ...rest,
+        method,
+        credentials: 'include',
+        headers: { ...this.defaultHeaders, ...headers },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      })
+      return await this.processApiData<T>(response)
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Impossible de joindre le serveur',
+      }
+    }
   }
 
-  async get<T>(
-    endpoint: string,
-    options: ApiOptions = {},
-  ): Promise<APIResponse<T>> {
-    const { params, ...rest } = options
-    return this.handleResponse<T>(
-      fetch(this.buildUrl(endpoint, params), {
-        ...rest,
-        method: 'GET',
-        headers: { ...this.defaultHeaders, ...rest.headers },
-      }),
-    )
+  async get<T>(endpoint: string, options?: ApiOptions) {
+    return this.request<T>('GET', endpoint, options)
   }
 
-  async post<T>(
-    endpoint: string,
-    data?: unknown,
-    options: ApiOptions = {},
-  ): Promise<APIResponse<T>> {
-    const { params, ...rest } = options
-    return this.handleResponse<T>(
-      fetch(this.buildUrl(endpoint, params), {
-        ...rest,
-        method: 'POST',
-        headers: { ...this.defaultHeaders, ...rest.headers },
-        body: data !== undefined ? JSON.stringify(data) : undefined,
-      }),
-    )
+  async post<T>(endpoint: string, data?: unknown, options?: ApiOptions) {
+    return this.request<T>('POST', endpoint, options, data)
   }
 
-  async put<T>(
-    endpoint: string,
-    data?: unknown,
-    options: ApiOptions = {},
-  ): Promise<APIResponse<T>> {
-    const { params, ...rest } = options
-    return this.handleResponse<T>(
-      fetch(this.buildUrl(endpoint, params), {
-        ...rest,
-        method: 'PUT',
-        headers: { ...this.defaultHeaders, ...rest.headers },
-        body: data !== undefined ? JSON.stringify(data) : undefined,
-      }),
-    )
+  async put<T>(endpoint: string, data?: unknown, options?: ApiOptions) {
+    return this.request<T>('PUT', endpoint, options, data)
   }
 
-  async patch<T>(
-    endpoint: string,
-    data?: unknown,
-    options: ApiOptions = {},
-  ): Promise<APIResponse<T>> {
-    const { params, ...rest } = options
-    return this.handleResponse<T>(
-      fetch(this.buildUrl(endpoint, params), {
-        ...rest,
-        method: 'PATCH',
-        headers: { ...this.defaultHeaders, ...rest.headers },
-        body: data !== undefined ? JSON.stringify(data) : undefined,
-      }),
-    )
+  async patch<T>(endpoint: string, data?: unknown, options?: ApiOptions) {
+    return this.request<T>('PATCH', endpoint, options, data)
   }
 
-  async delete<T>(
-    endpoint: string,
-    options: ApiOptions = {},
-  ): Promise<APIResponse<T>> {
-    const { params, ...rest } = options
-    return this.handleResponse<T>(
-      fetch(this.buildUrl(endpoint, params), {
-        ...rest,
-        method: 'DELETE',
-        headers: { ...this.defaultHeaders, ...rest.headers },
-      }),
-    )
+  async delete<T>(endpoint: string, options?: ApiOptions) {
+    return this.request<T>('DELETE', endpoint, options)
   }
 }
 

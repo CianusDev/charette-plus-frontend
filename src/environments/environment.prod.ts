@@ -2,9 +2,9 @@ import type { Environment } from './environment.interface'
 
 export const environment: Environment = {
   production: true,
-  apiUrl: 'https://api.example.com/api',
+  apiUrl: 'https://api.charette-plus.ci/api',
   logLevel: 'error',
-  appName: 'React Start',
+  appName: 'Charette Plus',
   apiTimeout: 10000,
   enableAnalytics: true,
   features: {

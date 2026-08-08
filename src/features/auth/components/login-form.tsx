@@ -1,15 +1,17 @@
 import { useTransition } from 'react'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
-import type { LoginDto } from '../auth.types'
 import { toast } from 'sonner'
-import logger from '#/shared/lib/logger'
+
 import { FormInput } from '#/shared/components/form-inputs'
 import { Button } from '#/shared/components/ui/button'
-import { signIn } from '../auth.service'
 import { LoginSchema } from '../auth.schemas'
+import { signIn } from '../auth.service'
+import type { LoginDto } from '../auth.types'
 
 export function LoginForm() {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const {
     register,
@@ -19,41 +21,41 @@ export function LoginForm() {
     resolver: standardSchemaResolver(LoginSchema),
   })
 
-  const onSubmit = (paylaod: LoginDto) => {
+  const onSubmit = (payload: LoginDto) => {
     startTransition(async () => {
-      const { success, data, message } = await signIn(paylaod)
-      if (!success) {
-        toast.error(message || 'Erreur lors de la connexion')
-        return
+      try {
+        const user = await signIn(payload)
+        toast.success(`Bienvenue ${user.username}`)
+        await router.navigate({ to: '/admin' })
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : 'Erreur lors de la connexion',
+        )
       }
-      toast.success(message || 'Connexion réussie')
-      logger.debug('Apres connexion:', {
-        data,
-      })
     })
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FormInput
-          label="E-mail"
-          type="email"
-          placeholder="e-mail"
-          error={errors.email?.message}
-          {...register('email')}
-        />
-        <FormInput
-          label="Mot de passe"
-          type="password"
-          placeholder="mot de passe"
-          error={errors.password?.message}
-          {...register('password')}
-        />
-        <Button className="mt-2" type="submit" loading={isPending}>
-          Se connecter
-        </Button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <FormInput
+        label="Nom d'utilisateur"
+        type="text"
+        autoComplete="username"
+        placeholder="admin"
+        error={errors.username?.message}
+        {...register('username')}
+      />
+      <FormInput
+        label="Mot de passe"
+        type="password"
+        autoComplete="current-password"
+        placeholder="••••••••"
+        error={errors.password?.message}
+        {...register('password')}
+      />
+      <Button className="mt-2 w-full" type="submit" loading={isPending}>
+        Se connecter
+      </Button>
+    </form>
   )
 }

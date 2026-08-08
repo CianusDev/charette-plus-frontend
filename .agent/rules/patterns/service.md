@@ -5,87 +5,59 @@ Un service encapsule les appels API d'une feature. Il utilise l'instance `api` d
 ## Règles
 
 - Un service par feature : `src/features/{feature}/{feature}.service.ts`
+- Les routes d'administration vont dans un fichier séparé : `admin-{feature}.service.ts`
 - Fonctions pures — pas d'état React, pas de hooks
 - Typage explicite sur entrées et sorties
-- Erreurs propagées via `ApiError` (ne pas catch ici — gérer dans le hook ou le composant)
+- Le service **déballe** l'enveloppe de l'API et lève une `Error` en cas d'échec
 
-## Structure
+## L'enveloppe de l'API
+
+L'API NestJS répond toujours avec la même structure :
+
+```json
+{ "success": true, "message": "Kits recuperes avec succes", "data": { "kits": [] } }
+```
+
+`api.get<T>()` ne lève jamais : il renvoie `APIResponse<T>` (`{ success, data?, message? }`). Le helper `unwrap()` fait le pont :
 
 ```ts
-import api from '#/shared/lib/api'
-import type { User, CreateUserPayload, UpdateUserPayload } from './users.types'
+import api, { unwrap } from '#/shared/lib/api'
+import type { ApiEnvelope } from '#/shared/lib/api'
+import type { Kit } from './kits.types'
 
-export async function getUsers(): Promise<User[]> {
-  return api.get<User[]>('/users')
-}
-
-export async function getUserById(id: string): Promise<User> {
-  return api.get<User>(`/users/${id}`)
-}
-
-export async function createUser(payload: CreateUserPayload): Promise<User> {
-  return api.post<User>('/users', payload)
-}
-
-export async function updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
-  return api.patch<User>(`/users/${id}`, payload)
-}
-
-export async function deleteUser(id: string): Promise<void> {
-  return api.delete(`/users/${id}`)
+export async function getKits(): Promise<Array<Kit>> {
+  const response = await api.get<ApiEnvelope<{ kits: Array<Kit> }>>('/kits')
+  return unwrap(response).kits
 }
 ```
 
-## Utilisation de `Api`
+`unwrap()` renvoie `data` ou lève une `Error` portant le message de l'API — utilisable tel quel dans un loader (l'`errorComponent` de la route prend le relais) ou dans un `try/catch` de composant pour afficher un toast.
 
-L'instance singleton `api` est dans `#/shared/lib/api`. Méthodes disponibles :
+## Méthodes disponibles
 
 ```ts
-api.get<T>(endpoint, options?)         // GET
-api.post<T>(endpoint, data?, options?) // POST
-api.put<T>(endpoint, data?, options?)  // PUT
-api.patch<T>(endpoint, data?, options?)// PATCH
-api.delete<T>(endpoint, options?)      // DELETE
+api.get<T>(endpoint, options?)
+api.post<T>(endpoint, data?, options?)
+api.put<T>(endpoint, data?, options?)
+api.patch<T>(endpoint, data?, options?)
+api.delete<T>(endpoint, options?)
 ```
 
-`options` = `RequestInit` natif de fetch (`signal`, `headers`, etc.).
+`options` = `RequestInit` natif (`signal`, `headers`, `params`).
 
-Erreur HTTP → throw `ApiError` avec `.status` (code HTTP) et `.data` (body).
+Toutes les requêtes partent avec `credentials: 'include'` : le cookie de session `authentication` accompagne automatiquement les appels aux routes protégées. Ne jamais ajouter de header `Authorization`.
 
-## Gestion des erreurs (dans le hook)
+## Gestion des erreurs (dans le composant)
 
 ```ts
-import { ApiError } from '#/shared/lib/api'
-
 try {
-  const user = await getUserById(id)
-} catch (err) {
-  if (err instanceof ApiError) {
-    console.error(err.status, err.message, err.data)
-  }
+  const kit = await updateKit(id, payload)
+  toast.success('Kit mis à jour')
+} catch (error) {
+  toast.error(error instanceof Error ? error.message : 'Modification impossible')
 }
-```
-
-## Service avec auth (token custom)
-
-Si besoin d'un header spécifique, instancier `Api` avec headers custom :
-
-```ts
-import { Api } from '#/shared/lib/api'
-
-const authedApi = new Api({ Authorization: `Bearer ${token}` })
-export const getProtectedData = () => authedApi.get<Data>('/protected')
 ```
 
 ## Service cross-feature
 
-Si logique partagée entre plusieurs features → `src/shared/` (pas dans une feature).
-
-```ts
-// src/shared/lib/session.service.ts
-import api from '#/shared/lib/api'
-
-export async function refreshToken(token: string) {
-  return api.post<{ token: string }>('/auth/refresh', { token })
-}
-```
+Si la logique est partagée entre plusieurs features → `src/shared/lib/` (jamais dans une feature).

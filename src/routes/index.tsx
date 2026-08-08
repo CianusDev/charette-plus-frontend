@@ -1,23 +1,37 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+
+import { getKits } from '#/features/kits'
+import { AboutSection } from '#/features/landing/components/about-section'
+import { ContactSection } from '#/features/landing/components/contact-section'
+import { FilieresSection } from '#/features/landing/components/filieres-section'
+import { HeroSection } from '#/features/landing/components/hero-section'
+import { WhySection } from '#/features/landing/components/why-section'
+import { PublicLayout } from '#/shared/components/layout/public-layout'
 
 export const Route = createFileRoute('/')({
-  component: Home,
+  loader: () => getKits(),
+  head: () => ({
+    meta: [
+      {
+        name: 'description',
+        content:
+          "Charette Plus — Kits de rentrée académique pour Architecture, Urbanisme et Architecture d'intérieure. Bondoukou, Côte d'Ivoire.",
+      },
+    ],
+  }),
+  component: LandingPage,
 })
 
-function Home() {
+function LandingPage() {
+  const kits = Route.useLoaderData()
+
   return (
-    <div className="p-8 flex flex-col gap-4 items-center justify-center h-svh">
-      <h1>
-        Welcome to <span className="text-red-600">TanStack Start</span>
-      </h1>
-      <div className="p-8 grid grid-cols-2 gap-4 max-w-2xl w-full">
-        <Link to="/login" className="p-4 border rounded-md">
-          <h2 className="text-lg font-bold mb-2">Login</h2>
-        </Link>
-        <div className="p-4 border rounded-md">
-          <h2 className="text-lg font-bold mb-2">TanStack Query</h2>
-        </div>
-      </div>
-    </div>
+    <PublicLayout>
+      <HeroSection />
+      <FilieresSection kits={kits} />
+      <WhySection />
+      <AboutSection />
+      <ContactSection />
+    </PublicLayout>
   )
 }

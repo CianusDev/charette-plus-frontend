@@ -32,13 +32,13 @@ Dossier de référence pour tout agent IA travaillant sur ce projet.
 ```
 src/
 ├── environments/       # Configs dev/staging/prod (Vite alias)
-├── features/           # Modules fonctionnels autonomes ⭐
+├── features/           # Modules fonctionnels autonomes ⭐ (kits, landing, auth, uploads)
 ├── shared/             # Code transversal
-│   ├── components/ui/  # shadcn — ne pas modifier
-│   ├── data/           # Constantes, clés localStorage
-│   ├── hooks/          # Hooks globaux
-│   ├── lib/            # api.ts, logger.ts, utils.ts
-│   └── providers/      # Context providers
+│   ├── components/ui/     # shadcn — ne pas modifier
+│   ├── components/brand/  # Boutons et icônes de la charte
+│   ├── components/layout/ # Header, footer, bouton WhatsApp, PublicLayout
+│   ├── data/              # Constantes (contact, WhatsApp), clés localStorage
+│   └── lib/               # api.ts, logger.ts, utils.ts, local-storage.ts
 ├── routes/             # Pages TanStack Router (file-based)
 ├── router.tsx          # Instance du router
 ├── routeTree.gen.ts    # AUTO-GÉNÉRÉ — ne jamais modifier

@@ -78,9 +78,15 @@ Routes définies dans `src/routes/` via la convention de fichiers TanStack Route
 | Fichier | URL |
 |---------|-----|
 | `src/routes/__root.tsx` | Layout racine (shell HTML) |
-| `src/routes/index.tsx` | `/` |
-| `src/routes/forms/index.tsx` | `/forms` |
-| `src/routes/users/$id.tsx` | `/users/:id` |
+| `src/routes/index.tsx` | `/` — vitrine (hero, filières, avantages, à propos, contact) |
+| `src/routes/kits/$slug.tsx` | `/kits/:slug` — détail d'un kit |
+| `src/routes/login/index.tsx` | `/login` — connexion admin |
+| `src/routes/admin/route.tsx` | Layout `/admin/*`, protégé par `requireAdmin` |
+| `src/routes/admin/index.tsx` | `/admin` — liste des kits |
+| `src/routes/admin/kits/new.tsx` | `/admin/kits/new` |
+| `src/routes/admin/kits/$id.tsx` | `/admin/kits/:id` — édition kit + articles |
+
+Les routes publiques sont rendues côté serveur (loader → API). Les routes `/admin/*` et `/login` portent `ssr: false` : la session est un cookie httpOnly, indisponible pendant le rendu serveur.
 
 **`src/routeTree.gen.ts` est auto-généré** par TanStack Router au démarrage du dev server. Ne jamais l'éditer.
 
@@ -114,16 +120,18 @@ function MaPage() {
 
 ### `shared/lib/api.ts`
 
-Classe `Api` et `ApiError` basées sur `fetch`. Instance singleton exportée.
+Classe `Api` basée sur `fetch`, instance singleton exportée. Toutes les requêtes partent avec `credentials: 'include'` (session par cookie httpOnly — aucun token manipulé en JavaScript).
+
+`api.get/post/...` ne lèvent jamais : elles renvoient `APIResponse<T>` (`{ success, data?, message? }`). Le helper `unwrap()` déballe l'enveloppe `ControllerResponse` de l'API et lève une `Error` en cas d'échec.
 
 ```ts
-import api from '#/shared/lib/api'
+import api, { unwrap } from '#/shared/lib/api'
+import type { ApiEnvelope } from '#/shared/lib/api'
 
-const users = await api.get<User[]>('/users')
-const user = await api.post<User>('/users', { name: 'Alice' })
+const kits = unwrap(await api.get<ApiEnvelope<{ kits: Array<Kit> }>>('/kits')).kits
 ```
 
-`ApiError` contient `.status` (HTTP code) et `.data` (body de l'erreur).
+Voir `patterns/service.md`.
 
 ### `shared/lib/logger.ts`
 
@@ -151,16 +159,22 @@ import { cn } from '#/shared/lib/utils'
 
 Chaque feature dans `src/features/{nom-feature}/` est autonome.
 
-Structure type :
+Features du projet :
+
 ```
 features/
-└── users/
-    ├── index.ts              # Exports publics de la feature
-    ├── users.service.ts      # Appels API (utilise api de shared/lib)
-    ├── use-users.ts          # Hook React
-    ├── users.types.ts        # Types/interfaces spécifiques
-    └── components/
-        └── user-card.tsx     # Composants UI spécifiques
+├── kits/                     # Domaine metier : kits et articles
+│   ├── index.ts              # Exports publics
+│   ├── kits.service.ts       # Routes publiques
+│   ├── admin-kits.service.ts # Routes d'administration
+│   ├── kits.utils.ts         # formatPrice, images, message WhatsApp
+│   ├── kits.types.ts
+│   └── components/           # kit-card, product-card, kit-form, kit-items-manager
+├── landing/components/       # Sections de la vitrine (hero, why, about, contact…)
+├── auth/                     # Connexion admin, guards de route
+└── uploads/                  # Upload direct vers Cloudinary (signature via l'API)
 ```
+
+La charte graphique est reprise de la maquette statique : couleurs et ombres sont des tokens Tailwind déclarés dans `src/styles.css` (`--color-navy`, `--color-orange`, `--shadow-brand`…), polices DM Sans / Outfit via `@fontsource-variable`.
 
 Voir `patterns/feature.md` pour le guide complet.

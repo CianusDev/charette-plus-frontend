@@ -1,40 +1,23 @@
 import { redirect } from '@tanstack/react-router'
+import { getProfile } from './auth.service'
+import type { AuthUser } from './auth.types'
 
-import storage from '#/shared/lib/local-storage'
-import { LOCAL_STORAGE_KEYS } from '#/shared/data/local-storage-keys'
-
-export function requireAuth() {
-  const token = storage.get<string>(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-  if (!token) {
+/**
+ * La session vit dans un cookie httpOnly : impossible de la lire en JavaScript.
+ * Le seul moyen fiable de savoir si l'admin est connecte est d'interroger l'API.
+ */
+export async function requireAdmin(): Promise<{ user: AuthUser }> {
+  const user = await getProfile()
+  if (!user) {
     throw redirect({ to: '/login' })
   }
-  return { token }
+  return { user }
 }
 
-export function requireGuest() {
-  const token = storage.get<string>(LOCAL_STORAGE_KEYS.AUTH_TOKEN)
-  if (token) {
-    throw redirect({ to: '/dashboard' })
+/** Empeche d'afficher le formulaire de connexion a un admin deja connecte. */
+export async function requireGuest(): Promise<void> {
+  const user = await getProfile()
+  if (user) {
+    throw redirect({ to: '/admin' })
   }
 }
-
-// Exemple d'utilisation
-//
-// export const Route =
-// createFileRoute('/dashboard/')({
-//   beforeLoad: () => requireAuth(),
-//   component: DashboardPage,
-// })
-
-// Route invité (déjà connecté → redirect) :
-// // src/routes/login/index.tsx
-// import { createFileRoute } from
-// '@tanstack/react-router'
-// import { requireGuest } from
-// '#/features/auth/auth.guard'
-
-// export const Route =
-// createFileRoute('/login/')({
-//   beforeLoad: () => requireGuest(),
-//   component: LoginPage,
-// })

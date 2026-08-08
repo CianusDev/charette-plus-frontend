@@ -1,19 +1,35 @@
+@import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/outfit';
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-  font-family: 'Satoshi';
-  src: url('/assets/fonts/satoshi.ttf');
-  font-style: normal;
-  font-display: swap;
+/* Charte Charette Plus — reprise des tokens de la maquette statique */
+@theme {
+  --color-navy: #21274e;
+  --color-navy-dark: #1a1631;
+  --color-navy-mid: #222c56;
+  --color-blue: #1c3f82;
+  --color-orange: #ea5b17;
+  --color-orange-light: #e28843;
+  --color-cream: #fcfeff;
+  --color-sand-50: #f7f8fc;
+  --color-sand-100: #eef0f7;
+  --color-sand-200: #dce0ec;
+  --color-whatsapp: #25d366;
+
+  --shadow-brand: 0 4px 24px rgb(33 39 78 / 0.08);
+  --shadow-brand-lg: 0 12px 48px rgb(33 39 78 / 0.14);
+
+  --spacing-header: 4.5rem;
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: 'Satoshi', sans-serif;
+  --font-heading: var(--font-display);
+  --font-display: 'Outfit Variable', system-ui, sans-serif;
+  --font-sans: 'DM Sans Variable', system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -55,30 +71,30 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #fcfeff;
+  --foreground: #21274e;
+  --card: #ffffff;
+  --card-foreground: #21274e;
+  --popover: #ffffff;
+  --popover-foreground: #21274e;
+  --primary: #21274e;
+  --primary-foreground: #fcfeff;
+  --secondary: #f7f8fc;
+  --secondary-foreground: #21274e;
+  --muted: #f7f8fc;
+  --muted-foreground: #6b7280;
+  --accent: #ea5b17;
+  --accent-foreground: #fcfeff;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #dce0ec;
+  --input: #dce0ec;
+  --ring: #ea5b17;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 1rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -131,30 +147,16 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply scroll-smooth font-sans;
+    scroll-padding-top: var(--spacing-header);
   }
-  h1 {
-    @apply scroll-m-20 pb-2 text-4xl font-bold tracking-tight text-balance;
-  }
-  h2 {
-    @apply scroll-m-20 pb-2 text-3xl font-semibold tracking-tight;
-  }
-  h3 {
-    @apply scroll-m-20 text-2xl font-semibold tracking-tight;
-  }
+  h1,
+  h2,
+  h3,
   h4 {
-    @apply scroll-m-20 text-xl font-semibold tracking-tight;
+    @apply font-display tracking-tight text-balance;
   }
-  p {
-    @apply leading-7 [&:not(:first-child)]:mt-6;
-  }
-  blockquote {
-    @apply mt-6 border-l-2 pl-6 italic;
-  }
-  ul {
-    @apply my-6 ml-6 list-disc [&>li]:mt-2;
-  }
-  code {
-    @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
+  img {
+    @apply block max-w-full;
   }
 }

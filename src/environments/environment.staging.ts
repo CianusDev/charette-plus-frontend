@@ -2,11 +2,11 @@ import type { Environment } from './environment.interface'
 
 export const environment: Environment = {
   production: false,
-  apiUrl: 'https://backend-staging.example.com/api',
+  apiUrl: 'https://api-staging.charette-plus.ci/api',
   logLevel: 'info',
-  appName: 'React Start Staging',
+  appName: 'Charette Plus (staging)',
   apiTimeout: 20000,
-  enableAnalytics: true,
+  enableAnalytics: false,
   features: {
     enableBeta: true,
     enableNewUI: false,
