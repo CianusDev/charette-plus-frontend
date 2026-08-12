@@ -42,7 +42,19 @@ export async function uploadImage(
   })
 
   if (!cloudinaryResponse.ok) {
-    throw new Error("L'envoi de l'image a échoué")
+    // Cloudinary detaille la cause du refus (signature invalide, preset
+    // manquant, format rejete...) : la remonter telle quelle, sinon l'erreur
+    // affichee ne permet aucun diagnostic.
+    const detail = await cloudinaryResponse
+      .json()
+      .then((body: { error?: { message?: string } }) => body.error?.message)
+      .catch(() => undefined)
+
+    throw new Error(
+      detail
+        ? `Cloudinary a refusé l'image : ${detail}`
+        : `L'envoi de l'image a échoué (HTTP ${cloudinaryResponse.status})`,
+    )
   }
 
   const result = (await cloudinaryResponse.json()) as {
