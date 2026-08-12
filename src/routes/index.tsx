@@ -7,9 +7,19 @@ import { FilieresSection } from '#/features/landing/components/filieres-section'
 import { HeroSection } from '#/features/landing/components/hero-section'
 import { WhySection } from '#/features/landing/components/why-section'
 import { PublicLayout } from '#/shared/components/layout/public-layout'
+import logger from '#/shared/lib/logger'
 
 export const Route = createFileRoute('/')({
-  loader: () => getKits(),
+  // L'API injoignable ne doit pas renvoyer une page 500 : la vitrine reste
+  // consultable et la section des filieres affiche l'indisponibilite.
+  loader: async () => {
+    try {
+      return { kits: await getKits(), unavailable: false }
+    } catch (error) {
+      logger.error('Chargement des kits impossible', error)
+      return { kits: [], unavailable: true }
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -23,12 +33,12 @@ export const Route = createFileRoute('/')({
 })
 
 function LandingPage() {
-  const kits = Route.useLoaderData()
+  const { kits, unavailable } = Route.useLoaderData()
 
   return (
     <PublicLayout>
       <HeroSection />
-      <FilieresSection kits={kits} />
+      <FilieresSection kits={kits} unavailable={unavailable} />
       <WhySection />
       <AboutSection />
       <ContactSection />
