@@ -1,5 +1,5 @@
 import { Link, Outlet, createFileRoute, useRouter } from '@tanstack/react-router'
-import { LogOut, Package, Store } from 'lucide-react'
+import { FileText, LogOut, Package, Store } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { requireAdmin, signOut } from '#/features/auth'
@@ -42,6 +42,14 @@ function AdminLayout() {
               >
                 <Package className="size-4" />
                 Kits
+              </Link>
+              <Link
+                to="/admin/contenu"
+                className="flex items-center gap-2 text-navy-mid transition-colors hover:text-orange"
+                activeProps={{ className: 'text-orange' }}
+              >
+                <FileText className="size-4" />
+                Contenu
               </Link>
               <Link
                 to="/"

@@ -6,26 +6,35 @@ import { ContactSection } from '#/features/landing/components/contact-section'
 import { FilieresSection } from '#/features/landing/components/filieres-section'
 import { HeroSection } from '#/features/landing/components/hero-section'
 import { WhySection } from '#/features/landing/components/why-section'
+import { DEFAULT_SITE_CONTENT, getSiteContent } from '#/features/site-content'
 import { PublicLayout } from '#/shared/components/layout/public-layout'
 import logger from '#/shared/lib/logger'
 
 export const Route = createFileRoute('/')({
   // L'API injoignable ne doit pas renvoyer une page 500 : la vitrine reste
-  // consultable et la section des filieres affiche l'indisponibilite.
+  // consultable avec le contenu de secours, et la section des filieres
+  // affiche l'indisponibilite du catalogue.
   loader: async () => {
-    try {
-      return { kits: await getKits(), unavailable: false }
-    } catch (error) {
-      logger.error('Chargement des kits impossible', error)
-      return { kits: [], unavailable: true }
-    }
+    const [kits, content] = await Promise.all([
+      getKits().catch((error: unknown) => {
+        logger.error('Chargement des kits impossible', error)
+        return null
+      }),
+      getSiteContent().catch((error: unknown) => {
+        logger.error('Chargement du contenu du site impossible', error)
+        return DEFAULT_SITE_CONTENT
+      }),
+    ])
+
+    return { kits: kits ?? [], unavailable: kits === null, content }
   },
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       {
         name: 'description',
         content:
-          "Charette Plus — Kits de rentrée académique pour Architecture, Urbanisme et Architecture d'intérieure. Bondoukou, Côte d'Ivoire.",
+          loaderData?.content.heroSubtitle ??
+          DEFAULT_SITE_CONTENT.heroSubtitle,
       },
     ],
   }),
@@ -33,15 +42,15 @@ export const Route = createFileRoute('/')({
 })
 
 function LandingPage() {
-  const { kits, unavailable } = Route.useLoaderData()
+  const { kits, unavailable, content } = Route.useLoaderData()
 
   return (
-    <PublicLayout>
-      <HeroSection />
-      <FilieresSection kits={kits} unavailable={unavailable} />
-      <WhySection />
-      <AboutSection />
-      <ContactSection />
+    <PublicLayout content={content}>
+      <HeroSection content={content} />
+      <FilieresSection kits={kits} content={content} unavailable={unavailable} />
+      <WhySection content={content} />
+      <AboutSection content={content} />
+      <ContactSection content={content} />
     </PublicLayout>
   )
 }

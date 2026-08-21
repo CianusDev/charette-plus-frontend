@@ -1,19 +1,35 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 
-import { buildKitOrderMessage, formatPrice, getKitBySlug, getKitImage } from '#/features/kits'
+import {
+  buildKitOrderMessage,
+  formatPrice,
+  getKitBySlug,
+  getKitImage,
+} from '#/features/kits'
 import { ProductCard } from '#/features/kits/components/product-card'
+import { DEFAULT_SITE_CONTENT, getSiteContent } from '#/features/site-content'
 import { brandButton } from '#/shared/components/brand/brand-button'
 import { PublicLayout } from '#/shared/components/layout/public-layout'
 import { buildWhatsAppLink } from '#/shared/data/constants'
+import logger from '#/shared/lib/logger'
 
 export const Route = createFileRoute('/kits/$slug')({
-  loader: ({ params }) => getKitBySlug(params.slug),
+  loader: async ({ params }) => {
+    const [kit, content] = await Promise.all([
+      getKitBySlug(params.slug),
+      getSiteContent().catch((error: unknown) => {
+        logger.error('Chargement du contenu du site impossible', error)
+        return DEFAULT_SITE_CONTENT
+      }),
+    ])
+    return { kit, content }
+  },
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-          { title: `Kit ${loaderData.name} — Charette Plus` },
-          { name: 'description', content: loaderData.tagline },
+          { title: `Kit ${loaderData.kit.name} — Charette Plus` },
+          { name: 'description', content: loaderData.kit.tagline },
         ]
       : [],
   }),
@@ -23,7 +39,7 @@ export const Route = createFileRoute('/kits/$slug')({
 
 function KitNotFound() {
   return (
-    <PublicLayout>
+    <PublicLayout content={DEFAULT_SITE_CONTENT}>
       <section className="mx-auto w-[min(1120px,92vw)] pt-[calc(var(--spacing-header)+4rem)] pb-20 text-center">
         <h1 className="mb-4 text-3xl font-bold">Kit introuvable</h1>
         <p className="mb-8 text-gray-700">
@@ -38,10 +54,10 @@ function KitNotFound() {
 }
 
 function KitDetailPage() {
-  const kit = Route.useLoaderData()
+  const { kit, content } = Route.useLoaderData()
 
   return (
-    <PublicLayout>
+    <PublicLayout content={content}>
       <section className="mx-auto w-[min(1120px,92vw)] pt-[calc(var(--spacing-header)+3rem)] pb-20">
         <Link
           to="/"
@@ -88,7 +104,10 @@ function KitDetailPage() {
             ) : null}
 
             <a
-              href={buildWhatsAppLink(buildKitOrderMessage(kit))}
+              href={buildWhatsAppLink(
+                content.whatsappNumber,
+                buildKitOrderMessage(kit),
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className={brandButton({ variant: 'primary' })}

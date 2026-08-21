@@ -1,11 +1,13 @@
 import { WhatsAppIcon } from '#/shared/components/brand/whatsapp-icon'
 import { buildWhatsAppLink } from '#/shared/data/constants'
+import type { SiteContent } from '#/features/site-content'
 
-export function WhatsAppFloat() {
+export function WhatsAppFloat({ content }: { content: SiteContent }) {
   return (
     <a
       href={buildWhatsAppLink(
-        'Bonjour Charette Plus, je souhaite des informations sur vos kits de rentrée.',
+        content.whatsappNumber,
+        content.defaultWhatsappMessage,
       )}
       target="_blank"
       rel="noopener noreferrer"

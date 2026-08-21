@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react'
 
 import { buildWhatsAppLink } from '#/shared/data/constants'
 import { cn } from '#/shared/lib/utils'
+import type { SiteContent } from '#/features/site-content'
 
 const NAV_LINKS = [
   { label: 'Filières', hash: 'filieres' },
@@ -12,7 +13,7 @@ const NAV_LINKS = [
   { label: 'Contact', hash: 'contact' },
 ]
 
-export function SiteHeader() {
+export function SiteHeader({ content }: { content: SiteContent }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -64,7 +65,8 @@ export function SiteHeader() {
           ))}
           <a
             href={buildWhatsAppLink(
-              'Bonjour Charette Plus, je souhaite commander un kit de rentrée.',
+              content.whatsappNumber,
+              content.orderWhatsappMessage,
             )}
             target="_blank"
             rel="noopener noreferrer"

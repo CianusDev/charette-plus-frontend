@@ -14,6 +14,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as KitsSlugRouteImport } from './routes/kits/$slug'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AdminContenuIndexRouteImport } from './routes/admin/contenu/index'
 import { Route as AdminKitsIdRouteImport } from './routes/admin/kits/$id'
 import { Route as AdminKitsNewRouteImport } from './routes/admin/kits/new'
 
@@ -42,6 +43,11 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminContenuIndexRoute = AdminContenuIndexRouteImport.update({
+  id: '/contenu/',
+  path: '/contenu/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminKitsIdRoute = AdminKitsIdRouteImport.update({
   id: '/kits/$id',
   path: '/kits/$id',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/login/': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/contenu/': typeof AdminContenuIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/contenu': typeof AdminContenuIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/login/': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/contenu/': typeof AdminContenuIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/contenu/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/contenu'
   id:
     | '__root__'
     | '/'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/contenu/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/contenu/': {
+      id: '/admin/contenu/'
+      path: '/contenu'
+      fullPath: '/admin/contenu/'
+      preLoaderRoute: typeof AdminContenuIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/kits/$id': {
       id: '/admin/kits/$id'
       path: '/kits/$id'
@@ -174,12 +193,14 @@ interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminKitsIdRoute: typeof AdminKitsIdRoute
   AdminKitsNewRoute: typeof AdminKitsNewRoute
+  AdminContenuIndexRoute: typeof AdminContenuIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminKitsIdRoute: AdminKitsIdRoute,
   AdminKitsNewRoute: AdminKitsNewRoute,
+  AdminContenuIndexRoute: AdminContenuIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
