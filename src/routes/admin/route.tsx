@@ -101,7 +101,7 @@ function AdminLayout() {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.exact }}
-              activeProps={{ className: 'bg-navy text-white hover:bg-navy hover:text-bg-navy' }}
+              activeProps={{ className: 'bg-navy text-white hover:bg-navy' }}
               className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-navy-mid transition-colors hover:bg-sand-100"
             >
               <item.icon className="size-4 shrink-0" />
