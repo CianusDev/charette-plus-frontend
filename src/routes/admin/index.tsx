@@ -1,165 +1,153 @@
-import { useState, useTransition } from 'react'
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
-
 import {
-  deleteKit,
-  formatPrice,
-  getAdminKits,
-  getKitImage,
-  updateKit,
-} from '#/features/kits'
-import type { Kit } from '#/features/kits'
+  AlertTriangle,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  FileText,
+  ImageOff,
+  Package,
+} from 'lucide-react'
+
+import { formatPrice, getAdminKits } from '#/features/kits'
+import { getAdminSiteContent } from '#/features/site-content'
 import { buttonVariants } from '#/shared/components/ui/button'
 
 export const Route = createFileRoute('/admin/')({
-  loader: () => getAdminKits(),
-  component: AdminKitsPage,
+  loader: async () => {
+    const [kits, content] = await Promise.all([
+      getAdminKits(),
+      getAdminSiteContent(),
+    ])
+    return { kits, content }
+  },
+  component: DashboardPage,
 })
 
-function AdminKitsPage() {
-  const initialKits = Route.useLoaderData()
-  const [kits, setKits] = useState<Array<Kit>>(initialKits)
-  const [isPending, startTransition] = useTransition()
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: typeof Package
+  label: string
+  value: string | number
+  hint?: string
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-brand">
+      <div className="mb-3 grid size-10 place-items-center rounded-xl bg-sand-50 text-navy">
+        <Icon className="size-5" />
+      </div>
+      <p className="text-2xl font-bold text-navy">{value}</p>
+      <p className="text-sm text-gray-500">{label}</p>
+      {hint ? <p className="mt-1 text-xs text-gray-500">{hint}</p> : null}
+    </div>
+  )
+}
 
-  const replaceKit = (updated: Kit) => {
-    setKits((current) =>
-      current.map((kit) => (kit.id === updated.id ? updated : kit)),
-    )
-  }
+function DashboardPage() {
+  const { kits, content } = Route.useLoaderData()
 
-  const toggleAvailability = (kit: Kit) => {
-    startTransition(async () => {
-      try {
-        replaceKit(await updateKit(kit.id, { available: !kit.available }))
-        toast.success(
-          kit.available ? 'Kit masqué de la vitrine' : 'Kit publié sur la vitrine',
-        )
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : 'Modification impossible',
-        )
-      }
-    })
-  }
+  const online = kits.filter((kit) => kit.available)
+  const hidden = kits.filter((kit) => !kit.available)
+  const withoutImage = kits.filter((kit) => !kit.imageUrl)
+  const withoutItems = kits.filter((kit) => kit.itemCount === 0)
+  const catalogTotal = online.reduce((sum, kit) => sum + kit.total, 0)
 
-  const removeKit = (kit: Kit) => {
-    if (
-      !window.confirm(
-        `Supprimer définitivement le kit "${kit.name}" et ses ${kit.itemCount} articles ?`,
-      )
-    ) {
-      return
-    }
+  const updatedAt = new Date(content.updatedAt)
+  const updatedLabel = Number.isNaN(updatedAt.getTime())
+    ? '—'
+    : new Intl.DateTimeFormat('fr-FR', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+      }).format(updatedAt)
 
-    startTransition(async () => {
-      try {
-        await deleteKit(kit.id)
-        setKits((current) => current.filter((entry) => entry.id !== kit.id))
-        toast.success('Kit supprimé')
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : 'Suppression impossible',
-        )
-      }
-    })
-  }
+  const alerts = [
+    ...withoutImage.map((kit) => ({
+      id: `image-${kit.id}`,
+      kitId: kit.id,
+      icon: ImageOff,
+      text: `« ${kit.name} » n'a pas d'image`,
+    })),
+    ...withoutItems.map((kit) => ({
+      id: `items-${kit.id}`,
+      kitId: kit.id,
+      icon: AlertTriangle,
+      text: `« ${kit.name} » ne contient aucun article`,
+    })),
+  ]
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">Kits</h1>
-          <p className="text-sm text-gray-500">
-            {kits.length} kit{kits.length > 1 ? 's' : ''} · le contenu de la
-            vitrine se met à jour immédiatement.
-          </p>
-        </div>
-        <Link to="/admin/kits/new" className={buttonVariants()}>
-          <Plus className="size-4" />
-          Nouveau kit
-        </Link>
-      </header>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon={Package} label="Kits au total" value={kits.length} />
+        <StatCard icon={Eye} label="En ligne" value={online.length} />
+        <StatCard icon={EyeOff} label="Masqués" value={hidden.length} />
+        <StatCard
+          icon={FileText}
+          label="Valeur du catalogue en ligne"
+          value={formatPrice(catalogTotal)}
+          hint={`${online.reduce((sum, kit) => sum + kit.itemCount, 0)} articles`}
+        />
+      </div>
 
-      {kits.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-sand-200 bg-white p-12 text-center text-gray-500">
-          Aucun kit pour le moment. Créez le premier.
+      <section className="rounded-2xl bg-white p-6 shadow-brand">
+        <h2 className="mb-1 text-xl font-semibold text-navy">À vérifier</h2>
+        <p className="mb-4 text-sm text-gray-500">
+          Ce qui empêche un kit d'être présentable sur la vitrine.
         </p>
-      ) : (
-        <div className="grid gap-4">
-          {kits.map((kit) => (
-            <article
-              key={kit.id}
-              className="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-4 shadow-brand"
-            >
-              <img
-                src={getKitImage(kit)}
-                alt=""
-                className="size-20 rounded-xl border border-sand-100 object-cover"
-              />
 
-              <div className="min-w-[200px] flex-1">
-                <div className="flex items-center gap-2">
-                  {kit.icon ? <span>{kit.icon}</span> : null}
-                  <h2 className="text-lg font-semibold">{kit.name}</h2>
-                  <span
-                    className={
-                      kit.available
-                        ? 'rounded-full bg-[#ecfdf5] px-2.5 py-0.5 text-xs font-semibold text-[#059669]'
-                        : 'rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500'
-                    }
-                  >
-                    {kit.available ? 'En ligne' : 'Masqué'}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{kit.tagline}</p>
-                <p className="mt-1 text-sm">
-                  <span className="font-semibold text-navy">
-                    {formatPrice(kit.total)}
-                  </span>
-                  <span className="text-gray-500"> · {kit.itemCount} articles</span>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => toggleAvailability(kit)}
-                  aria-label={kit.available ? 'Masquer le kit' : 'Publier le kit'}
-                  className="grid size-10 place-items-center rounded-full border border-sand-200 text-navy transition-colors hover:border-navy disabled:opacity-50"
-                >
-                  {kit.available ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-
+        {alerts.length === 0 ? (
+          <p className="rounded-xl bg-[#ecfdf5] p-4 text-sm font-medium text-[#059669]">
+            Tout est en ordre : chaque kit a une image et au moins un article.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {alerts.map((alert) => (
+              <li key={alert.id}>
                 <Link
                   to="/admin/kits/$id"
-                  params={{ id: kit.id }}
-                  aria-label={`Modifier ${kit.name}`}
-                  className="grid size-10 place-items-center rounded-full border border-sand-200 text-navy transition-colors hover:border-navy"
+                  params={{ id: alert.kitId }}
+                  className="flex items-center gap-3 rounded-xl bg-sand-50 px-4 py-3 text-sm text-navy transition-colors hover:bg-sand-100"
                 >
-                  <Pencil className="size-4" />
+                  <alert.icon className="size-4 shrink-0 text-orange" />
+                  <span className="flex-1">{alert.text}</span>
+                  <ArrowRight className="size-4 shrink-0 text-gray-500" />
                 </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => removeKit(kit)}
-                  aria-label={`Supprimer ${kit.name}`}
-                  className="grid size-10 place-items-center rounded-full border border-sand-200 text-gray-500 transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-50"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-2xl bg-white p-6 shadow-brand">
+          <h2 className="mb-1 text-lg font-semibold text-navy">Catalogue</h2>
+          <p className="mb-4 text-sm text-gray-500">
+            Créer, modifier, publier ou masquer un kit et ses articles.
+          </p>
+          <Link to="/admin/kits" className={buttonVariants()}>
+            Gérer les kits
+            <ArrowRight className="size-4" />
+          </Link>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-brand">
+          <h2 className="mb-1 text-lg font-semibold text-navy">Contenu du site</h2>
+          <p className="mb-4 text-sm text-gray-500">
+            Dernière modification : {updatedLabel}
+          </p>
+          <Link
+            to="/admin/contenu"
+            className={buttonVariants({ variant: 'outline' })}
+          >
+            Modifier le contenu
+            <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      </div>
     </div>
   )
 }

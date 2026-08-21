@@ -40,6 +40,9 @@ export interface SiteContent {
   kitsLabel: string
   kitsTitle: string
   kitsIntro: string
+  kitsCtaLabel: string
+  kitsPageTitle: string
+  kitsPageIntro: string
 
   advantagesLabel: string
   advantagesTitle: string
@@ -62,12 +65,22 @@ export interface SiteContent {
   contactWhatsappCta: string
 
   footerDescription: string
+
+  /** Date ISO de la derniere modification, affichee sur le tableau de bord. */
+  updatedAt: string
 }
 
 /** Corps attendu par `PUT /admin/site-content` : le contenu sans ses identifiants. */
 export type SiteContentPayload = Omit<
   SiteContent,
-  'id' | 'advantages' | 'aboutValues' | 'heroImageUrl' | 'heroImagePublicId' | 'aboutImageUrl' | 'aboutImagePublicId'
+  | 'id'
+  | 'updatedAt'
+  | 'advantages'
+  | 'aboutValues'
+  | 'heroImageUrl'
+  | 'heroImagePublicId'
+  | 'aboutImageUrl'
+  | 'aboutImagePublicId'
 > & {
   heroImageUrl?: string
   heroImagePublicId?: string

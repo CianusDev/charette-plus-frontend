@@ -78,13 +78,21 @@ Routes définies dans `src/routes/` via la convention de fichiers TanStack Route
 | Fichier | URL |
 |---------|-----|
 | `src/routes/__root.tsx` | Layout racine (shell HTML) |
-| `src/routes/index.tsx` | `/` — vitrine (hero, filières, avantages, à propos, contact) |
+| `src/routes/index.tsx` | `/` — accueil (hero, 3 kits en avant, avantages, CTA) |
+| `src/routes/kits/index.tsx` | `/kits` — catalogue complet (recherche, tri) |
 | `src/routes/kits/$slug.tsx` | `/kits/:slug` — détail d'un kit |
+| `src/routes/a-propos/index.tsx` | `/a-propos` |
+| `src/routes/contact/index.tsx` | `/contact` |
 | `src/routes/login/index.tsx` | `/login` — connexion admin |
-| `src/routes/admin/route.tsx` | Layout `/admin/*`, protégé par `requireAdmin` |
-| `src/routes/admin/index.tsx` | `/admin` — liste des kits |
+| `src/routes/admin/route.tsx` | Layout `/admin/*` (sidebar), protégé par `requireAdmin` |
+| `src/routes/admin/index.tsx` | `/admin` — tableau de bord |
+| `src/routes/admin/kits/index.tsx` | `/admin/kits` — liste des kits |
 | `src/routes/admin/kits/new.tsx` | `/admin/kits/new` |
 | `src/routes/admin/kits/$id.tsx` | `/admin/kits/:id` — édition kit + articles |
+| `src/routes/admin/contenu/index.tsx` | `/admin/contenu` — contenu du site (onglets) |
+| `src/routes/admin/compte/index.tsx` | `/admin/compte` — mot de passe |
+
+La navigation publique se fait par **pages**, plus par ancres : chaque section a son URL indexable. Le titre de la barre admin est déduit de la route, donc une page admin ne réaffiche pas son propre `<h1>`.
 
 Les routes publiques sont rendues côté serveur (loader → API). Les routes `/admin/*` et `/login` portent `ssr: false` : la session est un cookie httpOnly, indisponible pendant le rendu serveur.
 

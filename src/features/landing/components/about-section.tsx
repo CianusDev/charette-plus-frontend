@@ -1,15 +1,28 @@
 import { PRODUCT_PLACEHOLDER } from '#/shared/data/constants'
 import type { SiteContent } from '#/features/site-content'
 
-export function AboutSection({ content }: { content: SiteContent }) {
+export function AboutSection({
+  content,
+  withHeading = true,
+}: {
+  content: SiteContent
+  /** Faux quand la page affiche deja le titre via PageHero. */
+  withHeading?: boolean
+}) {
   return (
     <section id="apropos" className="py-14 md:py-20">
       <div className="mx-auto grid w-[min(1120px,92vw)] items-center gap-12 md:grid-cols-2">
         <div>
-          <span className="mb-3 inline-block text-[0.8rem] font-bold tracking-[0.08em] text-orange uppercase">
-            {content.aboutLabel}
-          </span>
-          <h2 className="mb-4 text-[2rem] font-bold">{content.aboutTitle}</h2>
+          {withHeading ? (
+            <>
+              <span className="mb-3 inline-block text-[0.8rem] font-bold tracking-[0.08em] text-orange uppercase">
+                {content.aboutLabel}
+              </span>
+              <h2 className="mb-4 text-[clamp(1.5rem,3vw,2rem)] font-bold">
+                {content.aboutTitle}
+              </h2>
+            </>
+          ) : null}
 
           {content.aboutParagraphs.map((paragraph) => (
             <p key={paragraph.slice(0, 40)} className="mb-4 text-gray-700">

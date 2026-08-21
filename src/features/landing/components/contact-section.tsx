@@ -4,7 +4,14 @@ import { buildWhatsAppLink } from '#/shared/data/constants'
 import { SectionHeader } from './section-header'
 import type { SiteContent } from '#/features/site-content'
 
-export function ContactSection({ content }: { content: SiteContent }) {
+export function ContactSection({
+  content,
+  withHeading = true,
+}: {
+  content: SiteContent
+  /** Faux quand la page affiche deja le titre via PageHero. */
+  withHeading?: boolean
+}) {
   const details = [
     {
       icon: '📍',
@@ -16,11 +23,16 @@ export function ContactSection({ content }: { content: SiteContent }) {
   ]
 
   return (
-    <section id="contact" className="bg-sand-50 py-14 md:py-20">
+    <section id="contact" className="bg-cream py-14 md:py-20">
       <div className="mx-auto w-[min(1120px,92vw)]">
-        <SectionHeader label={content.contactLabel} title={content.contactTitle}>
-          {content.contactIntro}
-        </SectionHeader>
+        {withHeading ? (
+          <SectionHeader
+            label={content.contactLabel}
+            title={content.contactTitle}
+          >
+            {content.contactIntro}
+          </SectionHeader>
+        ) : null}
 
         <div className="grid gap-8 md:grid-cols-2">
           <div className="rounded-2xl bg-white p-8 shadow-brand">

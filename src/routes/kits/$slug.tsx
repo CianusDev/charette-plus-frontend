@@ -45,8 +45,8 @@ function KitNotFound() {
         <p className="mb-8 text-gray-700">
           Ce kit n'existe pas ou n'est plus disponible.
         </p>
-        <Link to="/" hash="filieres" className={brandButton({ variant: 'primary' })}>
-          Voir toutes les filières
+        <Link to="/kits" className={brandButton({ variant: 'primary' })}>
+          Voir tous les kits
         </Link>
       </section>
     </PublicLayout>
@@ -60,12 +60,11 @@ function KitDetailPage() {
     <PublicLayout content={content}>
       <section className="mx-auto w-[min(1120px,92vw)] pt-[calc(var(--spacing-header)+3rem)] pb-20">
         <Link
-          to="/"
-          hash="filieres"
+          to="/kits"
           className="mb-8 inline-flex items-center gap-2 text-[0.9rem] text-gray-500 transition-colors hover:text-orange"
         >
           <ArrowLeft className="size-4" />
-          Retour aux filières
+          Retour au catalogue
         </Link>
 
         <div className="mb-12 grid gap-12 md:grid-cols-2">

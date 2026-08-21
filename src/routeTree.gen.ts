@@ -11,10 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AProposIndexRouteImport } from './routes/a-propos/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as ContactIndexRouteImport } from './routes/contact/index'
+import { Route as KitsIndexRouteImport } from './routes/kits/index'
 import { Route as KitsSlugRouteImport } from './routes/kits/$slug'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AdminCompteIndexRouteImport } from './routes/admin/compte/index'
 import { Route as AdminContenuIndexRouteImport } from './routes/admin/contenu/index'
+import { Route as AdminKitsIndexRouteImport } from './routes/admin/kits/index'
 import { Route as AdminKitsIdRouteImport } from './routes/admin/kits/$id'
 import { Route as AdminKitsNewRouteImport } from './routes/admin/kits/new'
 
@@ -28,10 +33,25 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AProposIndexRoute = AProposIndexRouteImport.update({
+  id: '/a-propos/',
+  path: '/a-propos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const ContactIndexRoute = ContactIndexRouteImport.update({
+  id: '/contact/',
+  path: '/contact/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KitsIndexRoute = KitsIndexRouteImport.update({
+  id: '/kits/',
+  path: '/kits/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const KitsSlugRoute = KitsSlugRouteImport.update({
   id: '/kits/$slug',
@@ -43,9 +63,19 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCompteIndexRoute = AdminCompteIndexRouteImport.update({
+  id: '/compte/',
+  path: '/compte/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminContenuIndexRoute = AdminContenuIndexRouteImport.update({
   id: '/contenu/',
   path: '/contenu/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminKitsIndexRoute = AdminKitsIndexRouteImport.update({
+  id: '/kits/',
+  path: '/kits/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminKitsIdRoute = AdminKitsIdRouteImport.update({
@@ -63,31 +93,46 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/kits/$slug': typeof KitsSlugRoute
+  '/a-propos/': typeof AProposIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/contact/': typeof ContactIndexRoute
+  '/kits/': typeof KitsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/compte/': typeof AdminCompteIndexRoute
   '/admin/contenu/': typeof AdminContenuIndexRoute
+  '/admin/kits/': typeof AdminKitsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/kits/$slug': typeof KitsSlugRoute
+  '/a-propos': typeof AProposIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/contact': typeof ContactIndexRoute
+  '/kits': typeof KitsIndexRoute
   '/login': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/compte': typeof AdminCompteIndexRoute
   '/admin/contenu': typeof AdminContenuIndexRoute
+  '/admin/kits': typeof AdminKitsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/kits/$slug': typeof KitsSlugRoute
+  '/a-propos/': typeof AProposIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/contact/': typeof ContactIndexRoute
+  '/kits/': typeof KitsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/admin/kits/$id': typeof AdminKitsIdRoute
   '/admin/kits/new': typeof AdminKitsNewRoute
+  '/admin/compte/': typeof AdminCompteIndexRoute
   '/admin/contenu/': typeof AdminContenuIndexRoute
+  '/admin/kits/': typeof AdminKitsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,36 +140,54 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/kits/$slug'
+    | '/a-propos/'
     | '/admin/'
+    | '/contact/'
+    | '/kits/'
     | '/login/'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/compte/'
     | '/admin/contenu/'
+    | '/admin/kits/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/kits/$slug'
+    | '/a-propos'
     | '/admin'
+    | '/contact'
+    | '/kits'
     | '/login'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/compte'
     | '/admin/contenu'
+    | '/admin/kits'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/kits/$slug'
+    | '/a-propos/'
     | '/admin/'
+    | '/contact/'
+    | '/kits/'
     | '/login/'
     | '/admin/kits/$id'
     | '/admin/kits/new'
+    | '/admin/compte/'
     | '/admin/contenu/'
+    | '/admin/kits/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   KitsSlugRoute: typeof KitsSlugRoute
+  AProposIndexRoute: typeof AProposIndexRoute
+  ContactIndexRoute: typeof ContactIndexRoute
+  KitsIndexRoute: typeof KitsIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
@@ -144,12 +207,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/a-propos/': {
+      id: '/a-propos/'
+      path: '/a-propos'
+      fullPath: '/a-propos/'
+      preLoaderRoute: typeof AProposIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/contact/': {
+      id: '/contact/'
+      path: '/contact'
+      fullPath: '/contact/'
+      preLoaderRoute: typeof ContactIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kits/': {
+      id: '/kits/'
+      path: '/kits'
+      fullPath: '/kits/'
+      preLoaderRoute: typeof KitsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/kits/$slug': {
       id: '/kits/$slug'
@@ -165,11 +249,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/compte/': {
+      id: '/admin/compte/'
+      path: '/compte'
+      fullPath: '/admin/compte/'
+      preLoaderRoute: typeof AdminCompteIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/contenu/': {
       id: '/admin/contenu/'
       path: '/contenu'
       fullPath: '/admin/contenu/'
       preLoaderRoute: typeof AdminContenuIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/kits/': {
+      id: '/admin/kits/'
+      path: '/kits'
+      fullPath: '/admin/kits/'
+      preLoaderRoute: typeof AdminKitsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/kits/$id': {
@@ -193,14 +291,18 @@ interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminKitsIdRoute: typeof AdminKitsIdRoute
   AdminKitsNewRoute: typeof AdminKitsNewRoute
+  AdminCompteIndexRoute: typeof AdminCompteIndexRoute
   AdminContenuIndexRoute: typeof AdminContenuIndexRoute
+  AdminKitsIndexRoute: typeof AdminKitsIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminKitsIdRoute: AdminKitsIdRoute,
   AdminKitsNewRoute: AdminKitsNewRoute,
+  AdminCompteIndexRoute: AdminCompteIndexRoute,
   AdminContenuIndexRoute: AdminContenuIndexRoute,
+  AdminKitsIndexRoute: AdminKitsIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -211,6 +313,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   KitsSlugRoute: KitsSlugRoute,
+  AProposIndexRoute: AProposIndexRoute,
+  ContactIndexRoute: ContactIndexRoute,
+  KitsIndexRoute: KitsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport

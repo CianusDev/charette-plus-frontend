@@ -22,29 +22,26 @@ export function SiteFooter({ content }: { content: SiteContent }) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  to="/"
-                  hash="filieres"
+                  to="/kits"
                   className="transition-colors hover:text-orange-light"
                 >
-                  Filières
+                  Nos kits
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/"
-                  hash="pourquoi"
-                  className="transition-colors hover:text-orange-light"
-                >
-                  Pourquoi nous
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/"
-                  hash="apropos"
+                  to="/a-propos"
                   className="transition-colors hover:text-orange-light"
                 >
                   À propos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="transition-colors hover:text-orange-light"
+                >
+                  Contact
                 </Link>
               </li>
             </ul>
@@ -55,8 +52,7 @@ export function SiteFooter({ content }: { content: SiteContent }) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  to="/"
-                  hash="contact"
+                  to="/contact"
                   className="transition-colors hover:text-orange-light"
                 >
                   {content.city}, {content.country}

@@ -1,9 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { getKits } from '#/features/kits'
-import { AboutSection } from '#/features/landing/components/about-section'
-import { ContactSection } from '#/features/landing/components/contact-section'
-import { FilieresSection } from '#/features/landing/components/filieres-section'
+import { ContactCtaSection } from '#/features/landing/components/contact-cta-section'
+import { FeaturedKitsSection } from '#/features/landing/components/featured-kits-section'
 import { HeroSection } from '#/features/landing/components/hero-section'
 import { WhySection } from '#/features/landing/components/why-section'
 import { DEFAULT_SITE_CONTENT, getSiteContent } from '#/features/site-content'
@@ -33,8 +32,7 @@ export const Route = createFileRoute('/')({
       {
         name: 'description',
         content:
-          loaderData?.content.heroSubtitle ??
-          DEFAULT_SITE_CONTENT.heroSubtitle,
+          loaderData?.content.heroSubtitle ?? DEFAULT_SITE_CONTENT.heroSubtitle,
       },
     ],
   }),
@@ -47,10 +45,13 @@ function LandingPage() {
   return (
     <PublicLayout content={content}>
       <HeroSection content={content} />
-      <FilieresSection kits={kits} content={content} unavailable={unavailable} />
+      <FeaturedKitsSection
+        kits={kits}
+        content={content}
+        unavailable={unavailable}
+      />
       <WhySection content={content} />
-      <AboutSection content={content} />
-      <ContactSection content={content} />
+      <ContactCtaSection content={content} />
     </PublicLayout>
   )
 }

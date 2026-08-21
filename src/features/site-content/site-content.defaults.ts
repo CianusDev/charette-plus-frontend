@@ -40,6 +40,10 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   kitsTitle: "Choisissez votre domaine d'études",
   kitsIntro:
     'Chaque kit est conçu pour répondre aux exigences spécifiques de votre formation. Cliquez sur une filière pour voir le contenu détaillé.',
+  kitsCtaLabel: 'Voir tous les kits',
+  kitsPageTitle: 'Nos kits de rentrée',
+  kitsPageIntro:
+    'Tous nos kits, filière par filière. Chaque kit détaille son contenu et son prix total, sans surprise.',
 
   advantagesLabel: 'Nos avantages',
   advantagesTitle: 'Pourquoi choisir Charette Plus ?',
@@ -137,4 +141,6 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
 
   footerDescription:
     'La référence ivoirienne en kits de rentrée académique pour les filières techniques et créatives.',
+
+  updatedAt: new Date(0).toISOString(),
 }

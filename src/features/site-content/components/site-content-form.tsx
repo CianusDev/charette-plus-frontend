@@ -6,6 +6,12 @@ import { FormInput } from '#/shared/components/form-inputs'
 import { Button } from '#/shared/components/ui/button'
 import { FieldDescription, FieldLabel } from '#/shared/components/ui/field'
 import { Input } from '#/shared/components/ui/input'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '#/shared/components/ui/tabs'
 import { Textarea } from '#/shared/components/ui/textarea'
 import { RepeatableList } from './repeatable-list'
 import type { UploadedImage } from '#/features/uploads/uploads.service'
@@ -150,6 +156,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
         kitsLabel: form.kitsLabel.trim(),
         kitsTitle: form.kitsTitle.trim(),
         kitsIntro: form.kitsIntro.trim(),
+        kitsCtaLabel: form.kitsCtaLabel.trim(),
+        kitsPageTitle: form.kitsPageTitle.trim(),
+        kitsPageIntro: form.kitsPageIntro.trim(),
 
         advantagesLabel: form.advantagesLabel.trim(),
         advantagesTitle: form.advantagesTitle.trim(),
@@ -189,6 +198,20 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-24">
+      <Tabs defaultValue="coordonnees" className="gap-6">
+        <div className="-mx-1 overflow-x-auto px-1">
+          <TabsList className="w-max">
+            <TabsTrigger value="coordonnees">Coordonnées</TabsTrigger>
+            <TabsTrigger value="hero">Hero</TabsTrigger>
+            <TabsTrigger value="filieres">Filières</TabsTrigger>
+            <TabsTrigger value="avantages">Avantages</TabsTrigger>
+            <TabsTrigger value="a-propos">À propos</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="footer">Pied de page</TabsTrigger>
+          </TabsList>
+        </div>
+
+          <TabsContent value="coordonnees">
       <Section
         title="Coordonnées"
         description="Utilisées dans le header, le footer, la section contact et tous les liens WhatsApp."
@@ -234,7 +257,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           onChange={(v) => set('orderWhatsappMessage', v)}
         />
       </Section>
+          </TabsContent>
 
+          <TabsContent value="hero">
       <Section title="Hero" description="La première section de la page d'accueil.">
         <FormInput
           label="Badge"
@@ -321,7 +346,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           onChange={setHeroImage}
         />
       </Section>
+          </TabsContent>
 
+          <TabsContent value="filieres">
       <Section title="Section filières" description="L'en-tête au-dessus des kits.">
         <FormInput
           label="Sur-titre"
@@ -338,8 +365,33 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           value={form.kitsIntro}
           onChange={(v) => set('kitsIntro', v)}
         />
+        <FormInput
+          label="Bouton vers le catalogue"
+          description="Affiché sous les kits mis en avant sur l'accueil."
+          value={form.kitsCtaLabel}
+          onChange={(e) => set('kitsCtaLabel', e.target.value)}
+        />
+        <div className="border-t border-sand-200 pt-4">
+          <p className="mb-3 text-sm font-semibold text-navy">
+            Page catalogue (/kits)
+          </p>
+          <div className="flex flex-col gap-4">
+            <FormInput
+              label="Titre de la page"
+              value={form.kitsPageTitle}
+              onChange={(e) => set('kitsPageTitle', e.target.value)}
+            />
+            <TextareaField
+              label="Introduction de la page"
+              value={form.kitsPageIntro}
+              onChange={(v) => set('kitsPageIntro', v)}
+            />
+          </div>
+        </div>
       </Section>
+          </TabsContent>
 
+          <TabsContent value="avantages">
       <Section title="Section avantages">
         <FormInput
           label="Sur-titre"
@@ -408,7 +460,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           )}
         />
       </Section>
+          </TabsContent>
 
+          <TabsContent value="a-propos">
       <Section title="Section à propos">
         <FormInput
           label="Sur-titre"
@@ -488,7 +542,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           onChange={setAboutImage}
         />
       </Section>
+          </TabsContent>
 
+          <TabsContent value="contact">
       <Section title="Section contact">
         <FormInput
           label="Sur-titre"
@@ -528,7 +584,9 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           onChange={(v) => set('contactWhatsappText', v)}
         />
       </Section>
+          </TabsContent>
 
+          <TabsContent value="footer">
       <Section title="Pied de page">
         <TextareaField
           label="Description"
@@ -536,6 +594,8 @@ export function SiteContentForm({ content, onSubmit }: SiteContentFormProps) {
           onChange={(v) => set('footerDescription', v)}
         />
       </Section>
+          </TabsContent>
+      </Tabs>
 
       <div className="sticky bottom-4 flex justify-end">
         <Button type="submit" size="lg" loading={isPending}>

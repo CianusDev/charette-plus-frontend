@@ -10,6 +10,20 @@ export async function signIn(payload: LoginDto): Promise<AuthUser> {
   return unwrap(response).user
 }
 
+/** Change le mot de passe de l'admin connecte. */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  const response = await api.patch<ApiEnvelope<null>>('/auth/password', {
+    currentPassword,
+    newPassword,
+  })
+  if (!response.success) {
+    throw new Error(response.message ?? 'Modification impossible')
+  }
+}
+
 export async function signOut(): Promise<void> {
   await api.post<ApiEnvelope<null>>('/auth/logout')
 }
